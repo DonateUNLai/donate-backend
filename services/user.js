@@ -25,11 +25,12 @@ async function verifySign(req, res) {
 			message: nonce.toString(),
 			signature: signature.toString(),
 		});
+
 		if (valid) {
+			const user = await User.findOne({ address });
 			const token = jsonwebtoken.sign({ address }, process.env.SECRET_KEY, { expiresIn: "12h" });
 			await redisClient.del(address);
 
-			const user = await User.findOne({ address });
 			if (!user) {
 				const newUser = new User({
 					address,
@@ -48,7 +49,7 @@ async function verifySign(req, res) {
 async function getProfile(req, res) {
 	try {
 		const address = req.user.address;
-		const user = await User.findById(address);
+		const user = await User.findOne({address});
 		return res.status(200).send(user);
 	} catch (err) {
 		return res.status(500).send({ error: err.message });
