@@ -11,7 +11,7 @@ async function addProject(req, res) {
 		res.status(200).send({ message: "success" });
 
 		trackTransaction(hash, async (transaction) => {
-			const contract = getContract({ address: to, abi: donateContarct.abi, client: publicClient });
+			const contract = getContract({ address: transaction.to, abi: donateContarct.abi, client: publicClient });
 			const [title, description, endTime, totalAmount] = await Promise.all([contract.read.title(), contract.read.description(), contract.read.end_time(), contract.read.totalAmount()]);
 			const creator = await User.findOne({ address: transaction.from });
 			await Project.create({
@@ -28,5 +28,6 @@ async function addProject(req, res) {
 		return res.status(500).send({ error: err.message });
 	}
 }
+
 
 module.exports = { addProject };

@@ -14,7 +14,7 @@ const authorization = (req, res, next) => {
 
   const token = tokenParts[1];
 
-  jsonwebtoken.verify(token, SECRET_KEY, (err, decoded) => {
+  jsonwebtoken.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(401).json({ message: "Invalid token" });
     }
