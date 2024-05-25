@@ -10,7 +10,6 @@ async function trackTransaction(hash, callback) {
 
 		if (transaction && transaction.blockNumber) {
 			confirmed = true;
-
 			callback(transaction);
 		} else {
 			console.log("loading...");

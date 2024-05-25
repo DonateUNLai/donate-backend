@@ -7,8 +7,8 @@ const projectSchema = new Schema({
 	allocations: [{ type: Schema.Types.ObjectId, ref: "Allocation" }],
 	title: String,
 	description: String,
-	startTime: { type: Date, default: Date.now },
-	endTime: Date,
+	startTime: { type: Number, default: Date.now },
+	endTime: Number,
 	totalAmount: Number,
 	hash: String,
 	creator: { type: Schema.Types.ObjectId, ref: "User" }

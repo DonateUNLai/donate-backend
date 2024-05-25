@@ -1,13 +1,18 @@
 const { User } = require("../models/index");
 const redisClient = require("../config/redisClient");
 const jsonwebtoken = require("jsonwebtoken");
-const { verifyMessage } = require("viem");
+const { verifyMessage, isAddress } = require("viem");
 
 const ttl = 60 * 5;
 
 async function generateNonce(req, res) {
 	try {
 		const { address } = req.body;
+
+		if (!isAddress(address)) {
+			return res.status(500).send({ error: "Invalid address" });
+		}
+
 		const nonce = Math.floor(1000 + Math.random() * 9000);
 		await redisClient.set(address, nonce, "EX", ttl);
 		return res.status(200).send({ nonce });
@@ -19,6 +24,10 @@ async function generateNonce(req, res) {
 async function verifySign(req, res) {
 	try {
 		const { address, signature } = req.body;
+		if (!isAddress(address)) {
+			return res.status(500).send({ error: "Invalid address" });
+		}
+
 		const nonce = await redisClient.get(address);
 		const valid = await verifyMessage({
 			address: address,
@@ -49,7 +58,7 @@ async function verifySign(req, res) {
 async function getProfile(req, res) {
 	try {
 		const address = req.user.address;
-		const user = await User.findOne({address});
+		const user = await User.findOne({ address });
 		return res.status(200).send(user);
 	} catch (err) {
 		return res.status(500).send({ error: err.message });

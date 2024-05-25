@@ -2,7 +2,7 @@ const { Project, User } = require("../models/index");
 const { trackTransaction } = require("../helper/chainHelper");
 const publicClient = require("../config/publicClient");
 const donateContarct = require("../contract/donate.json");
-import { getContract } from "viem";
+const { getContract, getAddress, formatUnits } = require("viem");
 
 async function addProject(req, res) {
 	try {
@@ -10,16 +10,19 @@ async function addProject(req, res) {
 
 		res.status(200).send({ message: "success" });
 
-		trackTransaction(hash, async (transaction) => {
-			const contract = getContract({ address: transaction.to, abi: donateContarct.abi, client: publicClient });
-			const [title, description, endTime, totalAmount] = await Promise.all([contract.read.title(), contract.read.description(), contract.read.end_time(), contract.read.totalAmount()]);
-			const creator = await User.findOne({ address: transaction.from });
+		trackTransaction(hash, async () => {
+			const transaction = await publicClient.getTransactionReceipt({ hash });
+			const contractAddress = transaction.logs.find((h) => hash == h.transactionHash).address;
+			const contract = getContract({ address: contractAddress, abi: donateContarct.abi, client: publicClient });
+			const [title, description, endTime, totalAmount] = await Promise.all([contract.read.title(), contract.read.description(), contract.read.endTime(), contract.read.totalAmount()]);
+			const creator = await User.findOne({ address: getAddress(transaction.from) });
+
 			await Project.create({
-				address: transaction.to,
+				address: contractAddress,
 				title,
 				description,
-				endTime,
-				totalAmount,
+				endTime: Number(endTime),
+				totalAmount: Number(totalAmount),
 				hash,
 				creator: creator._id,
 			});
@@ -29,5 +32,13 @@ async function addProject(req, res) {
 	}
 }
 
+async function getProjects(req, res) {
+	try {
+		const projects = await Project.find();
+		return res.status(200).send(projects);
+	} catch (err) {
+		return res.status(500).send({ error: err.message });
+	}
+}
 
-module.exports = { addProject };
+module.exports = { addProject, getProjects };

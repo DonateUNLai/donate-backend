@@ -3,14 +3,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const redisClient = require("./config/redisClient");
-
-// const User = require("./models/user");
-// const Tag = require("./models/tags");
-// const Comment = require("./models/comments");
-// const Question = require("./models/questions");
-// const Answer = require("./models/answers");
-
 require("./models/index");
+
+
 
 const app = express();
 
@@ -23,8 +18,12 @@ app.use(
 );
 
 const userRouter = require("./routes/user");
+const projectRouter = require("./routes/project");
+const donationRouter = require("./routes/donation");
 
 app.use("/user", userRouter);
+app.use("/project", projectRouter);
+app.use("/donation", donationRouter);
 
 // Database Connection
 mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}/donate?retryWrites=true&w=majority&appName=DonateUN`, { useNewUrlParser: true }).catch((err) => {
