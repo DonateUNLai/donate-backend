@@ -41,13 +41,15 @@ async function addDonation(req, res) {
 			const donor = await User.findOne({ address: getAddress(transaction.from) });
 			const project = await Project.findOne({ address: transaction.to });
 
-			await Donation.create({
+			const newDonation = await Donation.create({
 				donor: donor._id,
 				project: project._id,
 				currency,
 				amount,
 				hash,
 			});
+			project.donations.push(newDonation._id);
+			await project.save();
 		});
 	} catch (err) {
 		return res.status(500).send({ error: err.message });

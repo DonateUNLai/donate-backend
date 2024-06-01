@@ -1,31 +1,36 @@
 const { Project, User, Allocation } = require("../models/index");
+const { decodeFunctionData, getAddress, formatEther } = require("viem");
 
 async function addReceiver(req, res) {
 	try {
-		const { projectId, address, currency, amount } = req.body;
+		const { hash } = req.body;
 
-		const receiver = await User.findOne({ address });
+		res.status(200).send({ message: "success" });
 
-		if (!receiver) {
-			return res.status(500).send({ error: "The address has not been registered." });
-		}
+		trackTransaction(hash, async (transaction) => {
+			const decodedInput = decodeFunctionData({
+				abi: donateContarct.abi,
+				data: transaction.input,
+			});
 
-		const newAllocation = await Allocation.create({
-			receiver: receiver._id,
-			project: projectId,
-			currency,
-			amount,
+			const [receiverAddress, amount, currency] = decodedInput.args;
+
+			const receiver = await User.findOne({ address: getAddress(receiverAddress) });
+			const project = await Project.findOne({ address: transaction.to });
+			if (!project) {
+				return res.status(500).json({ error: "Project not found" });
+			}
+
+			const newAllocation = await Allocation.create({
+				receiver: receiver._id,
+				project: project._id,
+				currency,
+				amount,
+			});
+
+			project.allocations.push(newAllocation._id);
+			await project.save();
 		});
-
-		const project = await Project.findById(projectId);
-		if (!project) {
-			return res.status(500).json({ error: "Project not found" });
-		}
-
-		project.allocations.push(newAllocation._id);
-		await project.save();
-
-		return res.status(200).send({ message: "success" });
 	} catch (err) {
 		return res.status(500).send({ error: err.message });
 	}
@@ -40,6 +45,5 @@ async function getAllReceivers(req, res) {
 
 	return res.status(200).send({ allocations: project.allocations });
 }
-
 
 module.exports = { addReceiver, getAllReceivers };
