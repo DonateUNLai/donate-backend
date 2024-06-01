@@ -32,23 +32,14 @@ async function addReceiver(req, res) {
 }
 
 async function getAllReceivers(req, res) {
-	const { projectId } = req.query;
-	const project = await Project.findById(projectId).populate("users");
+	const { projectId } = req.params;
+	const project = await Project.findById(projectId).populate("allocations");
 	if (!project) {
 		return res.status(500).json({ error: "Project not found" });
 	}
 
-	return res.status(200).send({ receivers: project.receivers });
+	return res.status(200).send({ allocations: project.allocations });
 }
 
-async function updateAllocation(req, res) {
-	//链上合约发送hash到链下
-
-
-	//通过hash去链上对比相关信息再入库
-
-
-	//分账
-}
 
 module.exports = { addReceiver, getAllReceivers };

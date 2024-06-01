@@ -5,7 +5,7 @@ const donationService = require("../services/donation");
 
 
 
-router.get("/", donationService.getAllDonors);
+router.get("/:projectId", donationService.getAllDonors);
 router.post("/",[authorization], donationService.addDonation);
 
 
