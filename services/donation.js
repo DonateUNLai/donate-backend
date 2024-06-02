@@ -48,7 +48,7 @@ async function addDonation(req, res) {
 				amount,
 				hash,
 			});
-			project.donations.push(newDonation._id);
+			project.donors.push(newDonation._id);
 			await project.save();
 		});
 	} catch (err) {
