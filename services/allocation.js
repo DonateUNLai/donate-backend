@@ -37,13 +37,17 @@ async function addReceiver(req, res) {
 }
 
 async function getAllReceivers(req, res) {
-	const { projectId } = req.params;
-	const project = await Project.findById(projectId).populate("allocations");
-	if (!project) {
-		return res.status(500).json({ error: "Project not found" });
-	}
+	try {
+		const { projectId } = req.params;
+		const project = await Project.findById(projectId).populate("allocations")
+		if (!project) {
+			return res.status(500).json({ error: "Project not found" });
+		}
 
-	return res.status(200).send({ allocations: project.allocations });
+		return res.status(200).send({ allocations: project.allocations });
+	} catch (err) {
+		return res.status(500).send({ error: err.message });
+	}
 }
 
 module.exports = { addReceiver, getAllReceivers };

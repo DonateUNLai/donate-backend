@@ -6,7 +6,7 @@ const donateContarct = require("../contract/donate.json");
 async function getAllDonors(req, res) {
 	try {
 		const { projectId } = req.params;
-		const project = await Project.findById(projectId).populate("users");
+		const project = await Project.findById(projectId).populate("donors");
 		if (!project) {
 			return res.status(500).json({ error: "Project not found" });
 		}
